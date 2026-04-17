@@ -22,6 +22,8 @@ import Budget from '@/pages/Budget';
 import ATMLocator from '@/pages/ATMLocator';
 import Support from '@/pages/Support';
 
+const logoSrc = "/bcb-logo.png";
+
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
   const [showSplash, setShowSplash] = React.useState(() => !sessionStorage.getItem("splashShown"));
@@ -30,7 +32,11 @@ const AuthenticatedApp = () => {
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+        <img
+          src={logoSrc}
+          alt="Bawjiase Community Bank PLC"
+          className="w-16 h-16 rounded-full bg-white object-contain animate-bounce shadow-lg shadow-primary/20"
+        />
       </div>
     );
   }

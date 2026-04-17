@@ -1,8 +1,10 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, ArrowLeftRight, CreditCard, Receipt, Bell, Settings, Building2, PiggyBank, Smartphone, Banknote, Wallet, MapPin, HeadphonesIcon } from "lucide-react";
+import { LayoutDashboard, ArrowLeftRight, CreditCard, Receipt, Bell, Settings, PiggyBank, Smartphone, Banknote, Wallet, MapPin, HeadphonesIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+
+const logoSrc = "/bcb-logo.png";
 
 const navGroups = [
   {
@@ -42,8 +44,12 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="p-6 border-b border-border/30">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center glow-teal-sm">
-            <Building2 className="w-5 h-5 text-primary" />
+          <div className="w-11 h-11 rounded-full bg-white border border-primary/25 flex items-center justify-center overflow-hidden glow-teal-sm">
+            <img
+              src={logoSrc}
+              alt="Bawjiase Community Bank PLC"
+              className="w-full h-full object-contain"
+            />
           </div>
           <div>
             <h1 className="text-sm font-heading font-bold text-foreground tracking-tight">Bawjiase CB</h1>

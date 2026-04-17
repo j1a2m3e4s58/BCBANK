@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Building2 } from "lucide-react";
+
+const logoSrc = "/bcb-logo.png";
 
 export default function SplashScreen({ onComplete }) {
   const [phase, setPhase] = useState("bounce"); // bounce -> expand -> fade
@@ -70,13 +71,17 @@ export default function SplashScreen({ onComplete }) {
                 style={{ margin: "-8px" }}
               />
 
-              {/* Main icon box */}
+              {/* Main logo */}
               <motion.div
-                animate={{ boxShadow: ["0 0 20px hsl(174 72% 50% / 0.3)", "0 0 40px hsl(174 72% 50% / 0.6)", "0 0 20px hsl(174 72% 50% / 0.3)"] }}
+                animate={{ boxShadow: ["0 0 20px hsl(142 72% 32% / 0.28)", "0 0 42px hsl(142 72% 32% / 0.55)", "0 0 20px hsl(142 72% 32% / 0.28)"] }}
                 transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30 flex items-center justify-center"
+                className="w-24 h-24 rounded-full bg-white border border-primary/30 flex items-center justify-center overflow-hidden"
               >
-                <Building2 className="w-10 h-10 text-primary" />
+                <img
+                  src={logoSrc}
+                  alt="Bawjiase Community Bank PLC"
+                  className="w-full h-full object-contain"
+                />
               </motion.div>
             </div>
 
