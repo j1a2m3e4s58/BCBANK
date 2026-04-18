@@ -15,6 +15,7 @@ import Cards from '@/pages/Cards';
 import Payments from '@/pages/Payments';
 import Notifications from '@/pages/Notifications';
 import Transactions from '@/pages/Transactions';
+import Statements from '@/pages/Statements';
 import Settings from '@/pages/Settings';
 import Loans from '@/pages/Loans';
 import Savings from '@/pages/Savings';
@@ -85,6 +86,7 @@ const AuthenticatedApp = () => {
         <Route path="/payments" element={<Payments />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/transactions" element={<Transactions />} />
+        <Route path="/statements" element={<Statements />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/loans" element={<Loans />} />
         <Route path="/savings" element={<Savings />} />

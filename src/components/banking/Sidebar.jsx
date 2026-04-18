@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, ArrowLeftRight, CreditCard, Receipt, Bell, Settings, PiggyBank, Smartphone, Banknote, Wallet, MapPin, HeadphonesIcon, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, ArrowLeftRight, CreditCard, Receipt, Bell, Settings, PiggyBank, Smartphone, Banknote, Wallet, MapPin, HeadphonesIcon, ShieldCheck, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { useAuth } from "@/lib/AuthContext";
@@ -16,6 +16,7 @@ const navGroups = [
       { icon: Smartphone, label: "Mobile Money", path: "/momo" },
       { icon: CreditCard, label: "Cards", path: "/cards" },
       { icon: Receipt, label: "Payments", path: "/payments" },
+      { icon: FileText, label: "Statements", path: "/statements" },
     ]
   },
   {

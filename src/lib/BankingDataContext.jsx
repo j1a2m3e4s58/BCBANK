@@ -1,14 +1,16 @@
 import React, { createContext, useContext, useMemo, useState } from "react";
 import {
   sampleBeneficiaries,
+  sampleBillers,
   sampleCards,
+  sampleDisputes,
   sampleNotifications,
   sampleTransactions,
   userProfile,
 } from "@/lib/sampleData";
 
 const BankingDataContext = createContext(null);
-const STORAGE_KEY = "bcb_demo_banking_state_v1";
+const STORAGE_KEY = "bcb_demo_banking_state_v2";
 
 const parseAmount = (value) => {
   if (typeof value === "number") return value;
@@ -27,6 +29,7 @@ const todayParts = () => {
     date: now.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
     time: now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
     iso: now.toISOString(),
+    display: now.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }),
   };
 };
 
@@ -38,12 +41,18 @@ const initialState = {
   transactions: sampleTransactions,
   notifications: sampleNotifications,
   beneficiaries: sampleBeneficiaries,
+  billers: sampleBillers,
+  disputes: sampleDisputes,
   cards: sampleCards,
   cardSettings: {
     onlinePurchases: true,
     intlTransactions: false,
     contactless: true,
     atmWithdrawal: true,
+  },
+  cardProfiles: {
+    1: { frozen: false, dailyLimit: 3000, onlineLimit: 1500, replacementRequested: false, pinRequested: false },
+    2: { frozen: false, dailyLimit: 5000, onlineLimit: 2500, replacementRequested: false, pinRequested: false },
   },
   savingsGoals: [
     { id: 1, name: "New Car", target: 30000, saved: 12500, color: "from-primary/30 to-primary/5", emoji: "Car", deadline: "Dec 2026" },
@@ -151,6 +160,71 @@ export function BankingDataProvider({ children }) {
     }));
   };
 
+  const saveBiller = ({ label, provider, category, accountId }) => {
+    const biller = {
+      id: Date.now(),
+      label,
+      provider,
+      category,
+      accountId,
+      favorite: false,
+    };
+    updateState((current) => ({
+      ...current,
+      billers: [biller, ...current.billers],
+    }));
+    return biller;
+  };
+
+  const toggleBillerFavorite = (id) => {
+    updateState((current) => ({
+      ...current,
+      billers: current.billers.map((biller) =>
+        biller.id === id ? { ...biller, favorite: !biller.favorite } : biller
+      ),
+    }));
+  };
+
+  const addDispute = ({ reference, title, channel, summary, status = "Open" }) => {
+    const { display } = todayParts();
+    const dispute = {
+      id: Date.now(),
+      reference: reference || makeReference("DSP"),
+      title,
+      channel,
+      status,
+      createdAt: display,
+      summary,
+    };
+    updateState((current) => ({
+      ...current,
+      disputes: [dispute, ...current.disputes],
+    }));
+    return dispute;
+  };
+
+  const updateDisputeStatus = (id, status) => {
+    updateState((current) => ({
+      ...current,
+      disputes: current.disputes.map((dispute) =>
+        dispute.id === id ? { ...dispute, status } : dispute
+      ),
+    }));
+  };
+
+  const updateCardProfile = (cardId, updates) => {
+    updateState((current) => ({
+      ...current,
+      cardProfiles: {
+        ...current.cardProfiles,
+        [cardId]: {
+          ...(current.cardProfiles[cardId] || {}),
+          ...updates,
+        },
+      },
+    }));
+  };
+
   const value = useMemo(() => ({
     ...state,
     formatAmount,
@@ -159,6 +233,11 @@ export function BankingDataProvider({ children }) {
     addBeneficiary,
     updateBeneficiary,
     deleteBeneficiary,
+    saveBiller,
+    toggleBillerFavorite,
+    addDispute,
+    updateDisputeStatus,
+    updateCardProfile,
     setNotifications: (notifications) => updateState((current) => ({
       ...current,
       notifications: typeof notifications === "function" ? notifications(current.notifications) : notifications,
