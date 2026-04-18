@@ -1,22 +1,23 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import GlassCard from "@/components/banking/GlassCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Target, Plus, TrendingUp, CheckCircle2, PiggyBank } from "lucide-react";
-
-const initialGoals = [
-  { id: 1, name: "New Car", target: 30000, saved: 12500, color: "from-primary/30 to-primary/5", emoji: "🚗", deadline: "Dec 2026" },
-  { id: 2, name: "Holiday Trip", target: 8000, saved: 6200, color: "from-purple-500/30 to-purple-500/5", emoji: "✈️", deadline: "Aug 2026" },
-  { id: 3, name: "Emergency Fund", target: 10000, saved: 10000, color: "from-green-500/30 to-green-500/5", emoji: "🛡️", deadline: "Completed" },
-];
+import { Plus, TrendingUp, CheckCircle2, PiggyBank } from "lucide-react";
+import { toast } from "sonner";
+import { useBankingData } from "@/lib/BankingDataContext";
+import PinConfirmDialog from "@/components/banking/PinConfirmDialog";
+import ReceiptDialog from "@/components/banking/ReceiptDialog";
 
 export default function Savings() {
-  const [goals, setGoals] = useState(initialGoals);
+  const { savingsGoals: goals, setSavingsGoals: setGoals, balance, formatAmount, addTransaction, addNotification } = useBankingData();
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: "", target: "", emoji: "🎯", deadline: "" });
+  const [form, setForm] = useState({ name: "", target: "", emoji: "Goal", deadline: "" });
   const [topupGoal, setTopupGoal] = useState(null);
   const [topupAmount, setTopupAmount] = useState("");
+  const [pinOpen, setPinOpen] = useState(false);
+  const [receipt, setReceipt] = useState(null);
+  const [receiptOpen, setReceiptOpen] = useState(false);
 
   const addGoal = () => {
     if (!form.name || !form.target) return;
@@ -24,17 +25,52 @@ export default function Savings() {
       id: Date.now(), name: form.name, target: parseFloat(form.target), saved: 0,
       color: "from-blue-500/30 to-blue-500/5", emoji: form.emoji, deadline: form.deadline
     }]);
-    setForm({ name: "", target: "", emoji: "🎯", deadline: "" });
+    setForm({ name: "", target: "", emoji: "Goal", deadline: "" });
     setShowForm(false);
   };
 
   const topUp = () => {
     const amt = parseFloat(topupAmount);
     if (!amt || !topupGoal) return;
+    if (amt > balance) {
+      toast.error("Insufficient balance");
+      return;
+    }
+    setPinOpen(true);
+  };
+
+  const completeTopUp = () => {
+    const amt = parseFloat(topupAmount);
+    const goal = goals.find(g => g.id === topupGoal);
     setGoals(g => g.map(goal => goal.id === topupGoal
       ? { ...goal, saved: Math.min(goal.target, goal.saved + amt) } : goal));
+    const transaction = addTransaction({
+      name: `Savings top-up: ${goal?.name || "Goal"}`,
+      category: "bank",
+      type: "debit",
+      amount: amt,
+      referencePrefix: "SVG",
+      details: { goal: goal?.name },
+    });
+    addNotification({
+      title: "Savings Goal Updated",
+      message: `GH₵ ${formatAmount(amt)} added to ${goal?.name || "your goal"}.`,
+      type: "success",
+    });
+    setReceipt({
+      reference: transaction.reference,
+      type: "Savings Top-up",
+      recipient: goal?.name || "Savings Goal",
+      amount: `GH₵ ${formatAmount(amt)}`,
+      fee: "GH₵ 0.00",
+      date: `${transaction.date}, ${transaction.time}`,
+      status: "Completed",
+    });
     setTopupGoal(null);
     setTopupAmount("");
+    setPinOpen(false);
+    setReceiptOpen(true);
+    toast.success("Savings goal updated");
   };
 
   const totalSaved = goals.reduce((a, g) => a + g.saved, 0);
@@ -57,7 +93,7 @@ export default function Savings() {
         <GlassCard className="text-center">
           <PiggyBank className="w-5 h-5 text-primary mx-auto mb-1" />
           <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Total Saved</p>
-          <p className="text-lg font-heading font-bold text-foreground">GH₵ {totalSaved.toLocaleString()}</p>
+          <p className="text-lg font-heading font-bold text-foreground">GH₵ {formatAmount(totalSaved)}</p>
         </GlassCard>
         <GlassCard className="text-center">
           <TrendingUp className="w-5 h-5 text-primary mx-auto mb-1" />
@@ -85,7 +121,7 @@ export default function Savings() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="text-xs text-muted-foreground">Emoji</label>
-                  <Input placeholder="🎯" value={form.emoji} onChange={e => setForm(f => ({ ...f, emoji: e.target.value }))} className="bg-secondary/50 border-border/60 text-sm" />
+                  <Input placeholder="Goal" value={form.emoji} onChange={e => setForm(f => ({ ...f, emoji: e.target.value }))} className="bg-secondary/50 border-border/60 text-sm" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs text-muted-foreground">Deadline</label>
@@ -124,8 +160,8 @@ export default function Savings() {
                 </div>
                 <div>
                   <div className="flex justify-between text-xs mb-1.5">
-                    <span className="text-foreground font-semibold">GH₵ {goal.saved.toLocaleString()}</span>
-                    <span className="text-muted-foreground">of GH₵ {goal.target.toLocaleString()}</span>
+                    <span className="text-foreground font-semibold">GH₵ {formatAmount(goal.saved)}</span>
+                    <span className="text-muted-foreground">of GH₵ {formatAmount(goal.target)}</span>
                   </div>
                   <div className="h-2 bg-black/20 rounded-full overflow-hidden">
                     <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 1, delay: 0.2 + i * 0.1 }}
@@ -150,6 +186,14 @@ export default function Savings() {
           );
         })}
       </div>
+      <PinConfirmDialog
+        open={pinOpen}
+        title="Confirm Savings Top-up"
+        description="Enter your transaction PIN to move money into this savings goal."
+        onCancel={() => setPinOpen(false)}
+        onConfirm={completeTopUp}
+      />
+      <ReceiptDialog open={receiptOpen} onOpenChange={setReceiptOpen} receipt={receipt} />
     </div>
   );
 }

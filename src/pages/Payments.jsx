@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zap, Wifi, Smartphone, Droplets, Tv, GraduationCap, CheckCircle2, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import GlassCard from "@/components/banking/GlassCard";
 import { toast } from "sonner";
+import { useBankingData } from "@/lib/BankingDataContext";
+import PinConfirmDialog from "@/components/banking/PinConfirmDialog";
+import ReceiptDialog from "@/components/banking/ReceiptDialog";
 
 const billCategories = [
   { icon: Zap, label: "Electricity", color: "bg-yellow-500/15 text-yellow-400", providers: ["ECG", "NEDCo"] },
@@ -17,15 +20,73 @@ const billCategories = [
 ];
 
 export default function Payments() {
+  const { balance, formatAmount, addTransaction, addNotification } = useBankingData();
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [paymentDone, setPaymentDone] = useState(false);
   const [formData, setFormData] = useState({ provider: "", accountId: "", amount: "" });
+  const [pinOpen, setPinOpen] = useState(false);
+  const [receipt, setReceipt] = useState(null);
+  const [receiptOpen, setReceiptOpen] = useState(false);
 
   const handlePay = () => {
     if (!formData.provider || !formData.accountId || !formData.amount) {
       toast.error("Please fill in all fields");
       return;
     }
+    const amount = parseFloat(formData.amount);
+    if (!amount || amount <= 0) {
+      toast.error("Please enter a valid amount");
+      return;
+    }
+    if (amount > balance) {
+      toast.error("Insufficient balance");
+      return;
+    }
+    if (formData.accountId.trim().length < 4) {
+      toast.error("Enter a valid account or meter number");
+      return;
+    }
+    setPinOpen(true);
+  };
+
+  const completePayment = () => {
+    const amount = parseFloat(formData.amount);
+    const categoryMap = {
+      Electricity: "electricity",
+      Internet: "internet",
+      Airtime: "airtime",
+      Water: "bank",
+      "TV/Cable": "bank",
+      "School Fees": "bank",
+    };
+    const transaction = addTransaction({
+      name: `${formData.provider} ${selectedCategory.label}`,
+      category: categoryMap[selectedCategory.label] || "bank",
+      type: "debit",
+      amount,
+      referencePrefix: "PAY",
+      details: {
+        provider: formData.provider,
+        category: selectedCategory.label,
+        accountId: formData.accountId,
+      },
+    });
+    addNotification({
+      title: "Bill Payment Confirmed",
+      message: `GH₵ ${formatAmount(amount)} paid to ${formData.provider}.`,
+      type: "info",
+    });
+    setReceipt({
+      reference: transaction.reference,
+      type: selectedCategory.label,
+      recipient: `${formData.provider} (${formData.accountId})`,
+      amount: `GH₵ ${formatAmount(amount)}`,
+      fee: "GH₵ 0.00",
+      date: `${transaction.date}, ${transaction.time}`,
+      status: "Completed",
+    });
+    setPinOpen(false);
+    setReceiptOpen(true);
     setPaymentDone(true);
     toast.success("Payment successful!");
   };
@@ -54,10 +115,13 @@ export default function Payments() {
               </motion.div>
               <h2 className="text-xl font-heading font-bold text-foreground mb-1">Payment Successful!</h2>
               <p className="text-sm text-muted-foreground mb-1">
-                GH₵ {parseFloat(formData.amount).toFixed(2)} paid to {formData.provider}
+                GH₵ {formatAmount(formData.amount)} paid to {formData.provider}
               </p>
               <p className="text-xs text-muted-foreground mb-6">Ref: PAY{Date.now().toString().slice(-8)}</p>
-              <Button onClick={reset} className="bg-primary text-primary-foreground hover:bg-primary/90">Make Another Payment</Button>
+              <div className="flex gap-2 justify-center">
+                <Button variant="outline" onClick={() => setReceiptOpen(true)}>Receipt</Button>
+                <Button onClick={reset} className="bg-primary text-primary-foreground hover:bg-primary/90">Make Another Payment</Button>
+              </div>
             </GlassCard>
           </motion.div>
         ) : !selectedCategory ? (
@@ -141,6 +205,14 @@ export default function Payments() {
           </motion.div>
         )}
       </AnimatePresence>
+      <PinConfirmDialog
+        open={pinOpen}
+        title="Confirm Payment"
+        description="Enter your transaction PIN to complete this payment."
+        onCancel={() => setPinOpen(false)}
+        onConfirm={completePayment}
+      />
+      <ReceiptDialog open={receiptOpen} onOpenChange={setReceiptOpen} receipt={receipt} />
     </div>
   );
 }

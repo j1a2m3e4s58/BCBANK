@@ -2,7 +2,8 @@ import React from 'react';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BankingDataProvider } from '@/lib/BankingDataContext'
+import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -21,11 +22,16 @@ import MoMo from '@/pages/MoMo';
 import Budget from '@/pages/Budget';
 import ATMLocator from '@/pages/ATMLocator';
 import Support from '@/pages/Support';
+import LegalPage from '@/pages/LegalPage';
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
+import ForgotPassword from '@/pages/ForgotPassword';
+import AdminPanel from '@/pages/AdminPanel';
 
 const logoSrc = "/bcb-logo.png";
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isAuthenticated, isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
   const [showSplash, setShowSplash] = React.useState(() => !sessionStorage.getItem("splashShown"));
 
   // Show loading spinner while checking app public settings or auth
@@ -52,13 +58,26 @@ const AuthenticatedApp = () => {
     }
   }
 
-  // Render the main app
   if (showSplash) {
     return <SplashScreen onComplete={() => { sessionStorage.setItem("splashShown", "1"); setShowSplash(false); }} />;
   }
 
+  if (!isAuthenticated) {
+    return (
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    );
+  }
+
   return (
     <Routes>
+      <Route path="/login" element={<Navigate to="/" replace />} />
+      <Route path="/register" element={<Navigate to="/" replace />} />
+      <Route path="/forgot-password" element={<Navigate to="/" replace />} />
       <Route element={<AppLayout />}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/transfer" element={<Transfer />} />
@@ -73,6 +92,8 @@ const AuthenticatedApp = () => {
         <Route path="/budget" element={<Budget />} />
         <Route path="/atm" element={<ATMLocator />} />
         <Route path="/support" element={<Support />} />
+        <Route path="/legal/:slug" element={<LegalPage />} />
+        <Route path="/admin" element={<AdminPanel />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
@@ -85,9 +106,11 @@ function App() {
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
-        <Router>
-          <AuthenticatedApp />
-        </Router>
+        <BankingDataProvider>
+          <Router>
+            <AuthenticatedApp />
+          </Router>
+        </BankingDataProvider>
         <Toaster />
       </QueryClientProvider>
     </AuthProvider>

@@ -1,5 +1,5 @@
-const CACHE_NAME = "bcb-mobile-banking-v1";
-const APP_SHELL = ["/", "/manifest.json", "/bcb-logo.png", "/icons/icon-192.png", "/icons/icon-512.png"];
+const CACHE_NAME = "bcb-mobile-banking-v2";
+const APP_SHELL = ["/", "/manifest.json", "/bcb-logo.png", "/icons/icon-192.png", "/icons/icon-512.png", "/icons/apple-touch-icon.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

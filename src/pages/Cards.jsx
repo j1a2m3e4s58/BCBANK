@@ -1,28 +1,59 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Plus, Lock, Unlock, Snowflake, Settings, Copy, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import BankCard from "@/components/banking/BankCard";
 import GlassCard from "@/components/banking/GlassCard";
-import { sampleCards } from "@/lib/sampleData";
 import { toast } from "sonner";
+import { useBankingData } from "@/lib/BankingDataContext";
+import PinConfirmDialog from "@/components/banking/PinConfirmDialog";
 
 export default function Cards() {
+  const { cards, cardSettings, setCardSettings, addNotification } = useBankingData();
   const [selectedCard, setSelectedCard] = useState(0);
   const [showCvv, setShowCvv] = useState(false);
-  const [cardSettings, setCardSettings] = useState({
-    onlinePurchases: true,
-    intlTransactions: false,
-    contactless: true,
-    atmWithdrawal: true,
-  });
+  const [pendingSetting, setPendingSetting] = useState(null);
+  const [frozen, setFrozen] = useState(false);
 
-  const card = sampleCards[selectedCard];
+  const card = cards[selectedCard];
+
+  const confirmCardAction = () => {
+    if (pendingSetting === "freeze") {
+      setFrozen((value) => !value);
+      addNotification({
+        title: "Card Status Updated",
+        message: `${card.type} ending ${card.number.slice(-4)} ${frozen ? "unfrozen" : "frozen"}.`,
+        type: "warning",
+      });
+      toast.success(frozen ? "Card unfrozen" : "Card frozen");
+    } else {
+      setCardSettings(prev => ({ ...prev, [pendingSetting]: !prev[pendingSetting] }));
+      addNotification({
+        title: "Card Setting Updated",
+        message: `${pendingSetting.replace(/([A-Z])/g, " $1")} changed for ${card.type}.`,
+        type: "info",
+      });
+      toast.success("Card setting updated");
+    }
+    setPendingSetting(null);
+  };
 
   const toggleSetting = (key) => {
-    setCardSettings(prev => ({ ...prev, [key]: !prev[key] }));
-    toast.success("Card setting updated");
+    setPendingSetting(key);
+  };
+
+  const requestFreeze = () => {
+    setPendingSetting("freeze");
+  };
+
+  const requestPinChange = () => {
+    addNotification({
+      title: "PIN Change Requested",
+      message: `PIN change request started for ${card.type}.`,
+      type: "info",
+    });
+    toast.info("PIN change flow will be connected to the bank core system");
   };
 
   return (
@@ -41,7 +72,7 @@ export default function Cards() {
 
       {/* Card carousel */}
       <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory mb-6">
-        {sampleCards.map((c, i) => (
+        {cards.map((c, i) => (
           <div key={c.id} className="snap-center flex-shrink-0" onClick={() => setSelectedCard(i)}>
             <BankCard card={c} index={i} />
           </div>
@@ -72,7 +103,7 @@ export default function Cards() {
               <div className="p-3 rounded-lg bg-secondary/30">
                 <p className="text-xs text-muted-foreground">CVV</p>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <p className="text-sm font-medium text-foreground">{showCvv ? "847" : "•••"}</p>
+                  <p className="text-sm font-medium text-foreground">{showCvv ? "847" : "***"}</p>
                   <button onClick={() => setShowCvv(!showCvv)}>
                     {showCvv ? <EyeOff className="w-3.5 h-3.5 text-muted-foreground" /> : <Eye className="w-3.5 h-3.5 text-muted-foreground" />}
                   </button>
@@ -113,15 +144,22 @@ export default function Cards() {
           </div>
 
           <div className="mt-4 pt-4 border-t border-border/30 grid grid-cols-2 gap-3">
-            <Button variant="outline" className="gap-2 text-destructive border-destructive/20 hover:bg-destructive/10">
-              <Snowflake className="w-4 h-4" /> Freeze Card
+            <Button variant="outline" onClick={requestFreeze} className="gap-2 text-destructive border-destructive/20 hover:bg-destructive/10">
+              <Snowflake className="w-4 h-4" /> {frozen ? "Unfreeze Card" : "Freeze Card"}
             </Button>
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" onClick={requestPinChange} className="gap-2">
               <Lock className="w-4 h-4" /> Change PIN
             </Button>
           </div>
         </GlassCard>
       </div>
+      <PinConfirmDialog
+        open={Boolean(pendingSetting)}
+        title={pendingSetting === "freeze" ? "Confirm Card Status" : "Confirm Card Setting"}
+        description="Enter your transaction PIN to update this card."
+        onCancel={() => setPendingSetting(null)}
+        onConfirm={confirmCardAction}
+      />
     </div>
   );
 }

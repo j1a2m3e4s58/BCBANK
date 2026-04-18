@@ -4,11 +4,11 @@ import GlassCard from "@/components/banking/GlassCard";
 import { MapPin, Navigation, Phone, Clock, Wifi, Building2 } from "lucide-react";
 
 const locations = [
-  { id: 1, name: "Bawjiase Main Branch", type: "branch", address: "Main Street, Bawjiase", distance: "0.2 km", hours: "Mon–Fri: 8am–5pm", phone: "+233 30 123 4567", atm: true, open: true },
-  { id: 2, name: "Kasoa Junction ATM", type: "atm", address: "Kasoa Junction, Central Region", distance: "1.4 km", hours: "24/7", phone: null, atm: true, open: true },
-  { id: 3, name: "Bawjiase Market Branch", type: "branch", address: "Market Square, Bawjiase", distance: "2.1 km", hours: "Mon–Sat: 8am–4pm", phone: "+233 30 765 4321", atm: true, open: false },
-  { id: 4, name: "Ofaakor ATM", type: "atm", address: "Ofaakor Road, Awutu Senya", distance: "3.8 km", hours: "24/7", phone: null, atm: true, open: true },
-  { id: 5, name: "Kasoa Branch", type: "branch", address: "Kasoa Town Center", distance: "5.2 km", hours: "Mon–Fri: 8am–5pm, Sat: 9am–1pm", phone: "+233 30 234 5678", atm: true, open: true },
+  { id: 1, name: "Bawjiase Main Branch", type: "branch", address: "Main Street, Bawjiase", distance: "0.2 km", hours: "Mon-Fri: 8am-5pm", phone: "+233 30 123 4567", open: true },
+  { id: 2, name: "Kasoa Junction ATM", type: "atm", address: "Kasoa Junction, Central Region", distance: "1.4 km", hours: "24/7", phone: null, open: true },
+  { id: 3, name: "Bawjiase Market Branch", type: "branch", address: "Market Square, Bawjiase", distance: "2.1 km", hours: "Mon-Sat: 8am-4pm", phone: "+233 30 765 4321", open: false },
+  { id: 4, name: "Ofaakor ATM", type: "atm", address: "Ofaakor Road, Awutu Senya", distance: "3.8 km", hours: "24/7", phone: null, open: true },
+  { id: 5, name: "Kasoa Branch", type: "branch", address: "Kasoa Town Center", distance: "5.2 km", hours: "Mon-Fri: 8am-5pm, Sat: 9am-1pm", phone: "+233 30 234 5678", open: true },
 ];
 
 export default function ATMLocator() {
@@ -16,6 +16,7 @@ export default function ATMLocator() {
   const [selected, setSelected] = useState(null);
 
   const filtered = locations.filter(l => filter === "all" || l.type === filter);
+  const mapsUrl = (location) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${location.name} ${location.address} Ghana`)}`;
 
   return (
     <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-5">
@@ -30,17 +31,18 @@ export default function ATMLocator() {
           <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center animate-pulse">
             <MapPin className="w-6 h-6 text-primary" />
           </div>
-          <p className="text-xs text-muted-foreground">Interactive map view</p>
-          <p className="text-[10px] text-muted-foreground/60">Enable location access for directions</p>
+          <p className="text-xs text-muted-foreground">Nearby branch and ATM map</p>
+          <p className="text-[10px] text-muted-foreground/60">Tap a location below for calls and directions</p>
         </div>
         {/* Fake map dots */}
         {[{ top: "30%", left: "25%" }, { top: "50%", left: "55%" }, { top: "65%", left: "35%" }, { top: "40%", left: "70%" }].map((pos, i) => (
           <div key={i} className="absolute w-3 h-3 rounded-full bg-primary border-2 border-background shadow-lg"
             style={{ top: pos.top, left: pos.left }} />
         ))}
-        <button className="absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium">
-          <Navigation className="w-3 h-3" /> Use My Location
-        </button>
+        <a href="https://www.google.com/maps/search/?api=1&query=Bawjiase+Community+Bank+Ghana" target="_blank" rel="noopener noreferrer"
+          className="absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium">
+          <Navigation className="w-3 h-3" /> Open Map
+        </a>
       </div>
 
       {/* Filters */}
@@ -83,15 +85,18 @@ export default function ATMLocator() {
                       <Clock className="w-2.5 h-2.5" />{loc.hours}
                     </span>
                   </div>
-                  {selected === loc.id && loc.phone && (
+                  {selected === loc.id && (
                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-3 flex gap-2">
-                      <a href={`tel:${loc.phone}`}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20 text-primary text-xs font-medium hover:bg-primary/20 transition-colors">
-                        <Phone className="w-3 h-3" /> Call Branch
-                      </a>
-                      <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/60 border border-border/40 text-muted-foreground text-xs font-medium hover:text-foreground transition-colors">
+                      {loc.phone && (
+                        <a href={`tel:${loc.phone}`}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20 text-primary text-xs font-medium hover:bg-primary/20 transition-colors">
+                          <Phone className="w-3 h-3" /> Call Branch
+                        </a>
+                      )}
+                      <a href={mapsUrl(loc)} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/60 border border-border/40 text-muted-foreground text-xs font-medium hover:text-foreground transition-colors">
                         <Navigation className="w-3 h-3" /> Directions
-                      </button>
+                      </a>
                     </motion.div>
                   )}
                 </div>

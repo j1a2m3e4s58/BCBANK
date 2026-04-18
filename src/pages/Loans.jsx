@@ -1,15 +1,17 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import GlassCard from "@/components/banking/GlassCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CheckCircle2, Clock, TrendingDown, Banknote, ChevronRight, AlertCircle } from "lucide-react";
+import { BriefcaseBusiness, Building2, CheckCircle2, Clock, ChevronRight, AlertCircle, WalletCards } from "lucide-react";
+import PinConfirmDialog from "@/components/banking/PinConfirmDialog";
+import { toast } from "sonner";
 
 const loanProducts = [
-  { id: 1, name: "Personal Loan", rate: "18%", max: "GH₵ 50,000", term: "Up to 36 months", icon: "💼" },
-  { id: 2, name: "Business Loan", rate: "15%", max: "GH₵ 200,000", term: "Up to 60 months", icon: "🏢" },
-  { id: 3, name: "Salary Advance", rate: "10%", max: "GH₵ 10,000", term: "Up to 12 months", icon: "💰" },
+  { id: 1, name: "Personal Loan", rate: "18%", max: "GH₵ 50,000", term: "Up to 36 months", icon: WalletCards },
+  { id: 2, name: "Business Loan", rate: "15%", max: "GH₵ 200,000", term: "Up to 60 months", icon: Building2 },
+  { id: 3, name: "Salary Advance", rate: "10%", max: "GH₵ 10,000", term: "Up to 12 months", icon: BriefcaseBusiness },
 ];
 
 const activeLoans = [
@@ -28,10 +30,25 @@ export default function Loans() {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({ product: "", amount: "", term: "", purpose: "" });
   const [submitted, setSubmitted] = useState(false);
+  const [pinOpen, setPinOpen] = useState(false);
 
   const handleApply = () => {
+    if (step === 1 && (!form.product || !form.amount || Number(form.amount) <= 0)) {
+      toast.error("Choose a loan type and enter a valid amount");
+      return;
+    }
+    if (step === 2 && (!form.term || !form.purpose.trim())) {
+      toast.error("Choose repayment term and purpose");
+      return;
+    }
     if (step < 3) { setStep(step + 1); return; }
+    setPinOpen(true);
+  };
+
+  const completeApplication = () => {
+    setPinOpen(false);
     setSubmitted(true);
+    toast.success("Loan application submitted");
   };
 
   return (
@@ -78,7 +95,7 @@ export default function Loans() {
                 </div>
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-secondary/40 border border-border/50">
                   <Clock className="w-3.5 h-3.5 text-primary" />
-                  <span className="text-xs text-muted-foreground">Next payment due: <span className="text-foreground font-medium">{loan.nextDue} — GH₵ 520.00</span></span>
+                  <span className="text-xs text-muted-foreground">Next payment due: <span className="text-foreground font-medium">{loan.nextDue} - GH₵ 520.00</span></span>
                 </div>
               </GlassCard>
             ))}
@@ -88,10 +105,12 @@ export default function Loans() {
               <motion.div key={p.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.08 }}>
                 <GlassCard onClick={() => { setTab("apply"); setForm(f => ({ ...f, product: p.name })); }}
                   className="flex items-center gap-4 hover:border-primary/30 cursor-pointer">
-                  <span className="text-2xl">{p.icon}</span>
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                    <p.icon className="w-5 h-5 text-primary" />
+                  </div>
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-foreground">{p.name}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{p.term} • Up to {p.max}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{p.term} - Up to {p.max}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-bold text-primary">{p.rate}</p>
@@ -196,7 +215,7 @@ export default function Loans() {
                     <div className={`w-2 h-2 rounded-full ${s.status === "paid" ? "bg-green-400" : "bg-primary"}`} />
                     <div>
                       <p className="text-sm font-medium text-foreground">{s.month}</p>
-                      <p className="text-[10px] text-muted-foreground">Principal: {s.principal} · Interest: {s.interest}</p>
+                      <p className="text-[10px] text-muted-foreground">Principal: {s.principal} - Interest: {s.interest}</p>
                     </div>
                   </div>
                   <div className="text-right">
@@ -209,6 +228,13 @@ export default function Loans() {
           </motion.div>
         )}
       </AnimatePresence>
+      <PinConfirmDialog
+        open={pinOpen}
+        title="Confirm Loan Application"
+        description="Enter your transaction PIN to submit this application."
+        onCancel={() => setPinOpen(false)}
+        onConfirm={completeApplication}
+      />
     </div>
   );
 }

@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { motion } from "framer-motion";
 import GlassCard from "@/components/banking/GlassCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TrendingUp, ShoppingBag, Zap, Coffee, Wifi, Plus, AlertTriangle } from "lucide-react";
+import { useBankingData } from "@/lib/BankingDataContext";
 
 const categoryConfig = {
   food: { icon: Coffee, color: "text-orange-400", bg: "bg-orange-500/10", label: "Food & Dining" },
@@ -12,15 +13,8 @@ const categoryConfig = {
   internet: { icon: Wifi, color: "text-blue-400", bg: "bg-blue-500/10", label: "Internet & Phone" },
 };
 
-const initialBudgets = [
-  { id: 1, category: "food", limit: 800, spent: 650 },
-  { id: 2, category: "shopping", limit: 500, spent: 890 },
-  { id: 3, category: "utilities", limit: 400, spent: 320 },
-  { id: 4, category: "internet", limit: 200, spent: 99 },
-];
-
 export default function Budget() {
-  const [budgets, setBudgets] = useState(initialBudgets);
+  const { budgets, setBudgets, formatAmount } = useBankingData();
   const [showAdd, setShowAdd] = useState(false);
   const [newBudget, setNewBudget] = useState({ category: "food", limit: "" });
 
@@ -51,8 +45,8 @@ export default function Budget() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs text-muted-foreground">Total Spent This Month</p>
-            <p className="text-2xl font-heading font-bold text-foreground">GH₵ {totalSpent.toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">of GH₵ {totalLimit.toLocaleString()} budgeted</p>
+            <p className="text-2xl font-heading font-bold text-foreground">GH₵ {formatAmount(totalSpent)}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">of GH₵ {formatAmount(totalLimit)} budgeted</p>
           </div>
           <div className="w-16 h-16 rounded-full flex items-center justify-center border-4"
             style={{ borderColor: totalSpent > totalLimit ? "hsl(0 72% 55%)" : "hsl(174 72% 50%)" }}>
@@ -69,7 +63,7 @@ export default function Budget() {
         {totalSpent > totalLimit && (
           <div className="flex items-center gap-2 p-2 rounded-lg bg-red-500/10 border border-red-500/20">
             <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
-            <p className="text-xs text-red-400">You've exceeded your monthly budget by GH₵ {(totalSpent - totalLimit).toFixed(2)}</p>
+            <p className="text-xs text-red-400">You've exceeded your monthly budget by GH₵ {formatAmount(totalSpent - totalLimit)}</p>
           </div>
         )}
       </GlassCard>
@@ -117,12 +111,12 @@ export default function Budget() {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-foreground">{cfg.label}</p>
-                      <p className="text-[10px] text-muted-foreground">Limit: GH₵ {b.limit.toLocaleString()}</p>
+                      <p className="text-[10px] text-muted-foreground">Limit: GH₵ {formatAmount(b.limit)}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className={`text-sm font-semibold ${over ? "text-red-400" : "text-foreground"}`}>GH₵ {b.spent.toLocaleString()}</p>
-                    {over && <p className="text-[10px] text-red-400">Over by GH₵ {(b.spent - b.limit).toFixed(0)}</p>}
+                    <p className={`text-sm font-semibold ${over ? "text-red-400" : "text-foreground"}`}>GH₵ {formatAmount(b.spent)}</p>
+                    {over && <p className="text-[10px] text-red-400">Over by GH₵ {formatAmount(b.spent - b.limit)}</p>}
                   </div>
                 </div>
                 <div>
@@ -145,7 +139,7 @@ export default function Budget() {
           <p className="text-xs font-semibold text-primary">AI Spending Insight</p>
         </div>
         <p className="text-xs text-muted-foreground leading-relaxed">
-          Your shopping spend is <span className="text-red-400 font-medium">78% over budget</span> this month. Consider reducing discretionary purchases. You're doing great on utilities — 20% under budget!
+          Your shopping spend is <span className="text-red-400 font-medium">78% over budget</span> this month. Consider reducing discretionary purchases. You're doing great on utilities - 20% under budget!
         </p>
       </GlassCard>
     </div>

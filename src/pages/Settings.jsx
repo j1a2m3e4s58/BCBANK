@@ -1,18 +1,23 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { Link, useNavigate } from "react-router-dom";
 import {
-  User, Shield, Bell, Palette, HelpCircle, LogOut, ChevronRight,
+  User, Shield, Bell, HelpCircle, LogOut, ChevronRight, FileText,
   Fingerprint, Lock, Eye, Globe, Phone, Mail, MapPin, Building2
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import GlassCard from "@/components/banking/GlassCard";
-import { userProfile } from "@/lib/sampleData";
+import InstallAppCard from "@/components/banking/InstallAppCard";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { base44 } from "@/api/base44Client";
+import { useBankingData } from "@/lib/BankingDataContext";
+import { useAuth } from "@/lib/AuthContext";
 
 export default function Settings() {
+  const { userProfile, resetDemoData } = useBankingData();
+  const { logout, user } = useAuth();
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState(null);
   const [settings, setSettings] = useState({
     pushNotifications: true,
@@ -31,6 +36,7 @@ export default function Settings() {
     { icon: User, label: "Personal Info", section: "profile" },
     { icon: Shield, label: "Security", section: "security" },
     { icon: Bell, label: "Notifications", section: "notif_settings" },
+    { icon: FileText, label: "Legal & Disclosures", section: "legal" },
     { icon: HelpCircle, label: "Help & Support", section: "help" },
   ];
 
@@ -48,12 +54,14 @@ export default function Settings() {
             <span className="text-lg font-heading font-bold text-primary">KA</span>
           </div>
           <div className="flex-1">
-            <h2 className="text-base font-heading font-bold text-foreground">{userProfile.name}</h2>
-            <p className="text-xs text-muted-foreground">{userProfile.email}</p>
-            <p className="text-xs text-primary mt-0.5">Premium Account</p>
+            <h2 className="text-base font-heading font-bold text-foreground">{user?.full_name || userProfile.name}</h2>
+            <p className="text-xs text-muted-foreground">{user?.email || userProfile.email}</p>
+            <p className="text-xs text-primary mt-0.5">{user?.accountType || "Premium Account"}</p>
           </div>
         </div>
       </GlassCard>
+
+      <InstallAppCard />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Menu */}
@@ -87,10 +95,24 @@ export default function Settings() {
 
           <Button
             variant="outline"
-            onClick={() => base44.auth.logout()}
+            onClick={() => {
+              logout();
+              toast.success("Signed out");
+              navigate("/login");
+            }}
             className="w-full mt-4 gap-2 text-destructive border-destructive/20 hover:bg-destructive/10"
           >
             <LogOut className="w-4 h-4" /> Sign Out
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              resetDemoData();
+              toast.success("Demo banking data reset");
+            }}
+            className="w-full gap-2"
+          >
+            Reset Demo Data
           </Button>
         </div>
 
@@ -102,11 +124,11 @@ export default function Settings() {
                 <h3 className="text-sm font-heading font-semibold text-foreground mb-4">Personal Information</h3>
                 <div className="space-y-3">
                   {[
-                    { icon: User, label: "Full Name", value: userProfile.name },
-                    { icon: Mail, label: "Email", value: userProfile.email },
-                    { icon: Phone, label: "Phone", value: userProfile.phone },
-                    { icon: Building2, label: "Account No.", value: userProfile.accountNumber },
-                    { icon: MapPin, label: "Branch", value: userProfile.branch },
+                    { icon: User, label: "Full Name", value: user?.full_name || userProfile.name },
+                    { icon: Mail, label: "Email", value: user?.email || userProfile.email },
+                    { icon: Phone, label: "Phone", value: user?.phone || userProfile.phone },
+                    { icon: Building2, label: "Account No.", value: user?.accountNumber || userProfile.accountNumber },
+                    { icon: MapPin, label: "Branch", value: user?.kyc?.branch || userProfile.branch },
                     { icon: Globe, label: "Member Since", value: userProfile.memberSince },
                   ].map((item) => (
                     <div key={item.label} className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30">
@@ -199,6 +221,30 @@ export default function Settings() {
                       </div>
                       <ChevronRight className="w-4 h-4 text-muted-foreground" />
                     </button>
+                  ))}
+                </div>
+              </GlassCard>
+            </motion.div>
+          )}
+
+          {activeSection === "legal" && (
+            <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}>
+              <GlassCard>
+                <h3 className="text-sm font-heading font-semibold text-foreground mb-4">Legal & Disclosures</h3>
+                <div className="space-y-3">
+                  {[
+                    { label: "Privacy Policy", desc: "How customer data is handled", path: "/legal/privacy" },
+                    { label: "Terms of Use", desc: "Rules for using mobile banking", path: "/legal/terms" },
+                    { label: "Fees & Limits", desc: "Transfer, wallet, and bill payment disclosures", path: "/legal/fees" },
+                    { label: "Security Center", desc: "PIN, fraud, and device safety guidance", path: "/legal/security" },
+                  ].map((item) => (
+                    <Link key={item.path} to={item.path} className="w-full flex items-center justify-between p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors text-left">
+                      <div>
+                        <p className="text-sm text-foreground">{item.label}</p>
+                        <p className="text-[10px] text-muted-foreground">{item.desc}</p>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    </Link>
                   ))}
                 </div>
               </GlassCard>

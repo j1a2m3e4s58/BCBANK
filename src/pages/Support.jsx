@@ -1,15 +1,16 @@
-import React, { useState, useRef, useEffect } from "react";
+﻿import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
 import GlassCard from "@/components/banking/GlassCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MessageCircle, Phone, Mail, ChevronRight, Send, Bot, User, ChevronDown } from "lucide-react";
 
 const faqs = [
-  { q: "How do I reset my PIN?", a: "Go to Settings → Security → Change PIN. You'll need your current PIN or OTP sent to your registered phone." },
-  { q: "How long do transfers take?", a: "Intra-bank transfers are instant. Inter-bank transfers take 1–2 business days via GIP/ACH." },
+  { q: "How do I reset my PIN?", a: "Go to Settings -> Security -> Change PIN. You'll need your current PIN or OTP sent to your registered phone." },
+  { q: "How long do transfers take?", a: "Intra-bank transfers are instant. Inter-bank transfers take 1-2 business days via GIP/ACH." },
   { q: "What are the transfer limits?", a: "Daily transfer limit is GH₵ 10,000 for regular accounts. Premium accounts get GH₵ 50,000 daily." },
-  { q: "How do I dispute a transaction?", a: "Go to Transactions → tap the transaction → Report Issue. Our team responds within 48 hours." },
+  { q: "How do I dispute a transaction?", a: "Go to Transactions -> tap the transaction -> Report Issue. Our team responds within 48 hours." },
   { q: "Is my money insured?", a: "Yes. All deposits are insured up to GH₵ 6,250 by the Ghana Deposit Protection Corporation (GDPC)." },
 ];
 
@@ -17,9 +18,9 @@ const botReplies = {
   "help": "I can help with account inquiries, transfers, cards, and more. What do you need?",
   "balance": "Your current balance is GH₵ 24,850.00. Would you like to view recent transactions?",
   "transfer": "To make a transfer, go to the Transfer page from the main menu. Need help with a specific issue?",
-  "card": "For card issues, go to Cards → manage your card settings there. What's the problem?",
+  "card": "For card issues, go to Cards -> manage your card settings there. What's the problem?",
   "loan": "We offer Personal, Business, and Salary Advance loans. Visit the Loans section to apply!",
-  "default": "Thanks for reaching out! A support agent will follow up within 2 hours during business hours (Mon–Fri, 8am–5pm)."
+  "default": "Thanks for reaching out! A support agent will follow up within 2 hours during business hours (Mon-Fri, 8am-5pm)."
 };
 
 function getBotReply(msg) {
@@ -59,6 +60,17 @@ export default function Support() {
       <div>
         <h1 className="text-xl md:text-2xl font-heading font-bold text-foreground">Support Center</h1>
         <p className="text-xs text-muted-foreground mt-0.5">We're here to help you</p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        <Link to="/legal/security" className="rounded-xl border border-border/40 bg-card/50 p-3 hover:border-primary/30 transition-colors">
+          <p className="text-xs font-semibold text-foreground">Security Center</p>
+          <p className="text-[10px] text-muted-foreground mt-0.5">Fraud and PIN safety</p>
+        </Link>
+        <Link to="/legal/fees" className="rounded-xl border border-border/40 bg-card/50 p-3 hover:border-primary/30 transition-colors">
+          <p className="text-xs font-semibold text-foreground">Fees & Limits</p>
+          <p className="text-[10px] text-muted-foreground mt-0.5">Charges before you pay</p>
+        </Link>
       </div>
 
       {/* Tabs */}
@@ -161,9 +173,9 @@ export default function Support() {
         {tab === "contact" && (
           <motion.div key="contact" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-3">
             {[
-              { icon: Phone, label: "Call Us", value: "+233 30 123 4567", sub: "Mon–Fri, 8am–5pm", action: "tel:+233301234567", color: "text-green-400", bg: "bg-green-500/10 border-green-500/20" },
-              { icon: MessageCircle, label: "WhatsApp", value: "+233 55 987 6543", sub: "Available 24/7", action: "https://wa.me/233559876543", color: "text-green-400", bg: "bg-green-500/10 border-green-500/20" },
-              { icon: Mail, label: "Email Support", value: "support@bawjiasecb.com", sub: "Response within 24 hrs", action: "mailto:support@bawjiasecb.com", color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20" },
+              { icon: Phone, label: "Call Us", value: "+233 30 123 4567", sub: "Mon-Fri, 8am-5pm", action: "tel:+233301234567", color: "text-green-400", bg: "bg-green-500/10 border-green-500/20" },
+              { icon: MessageCircle, label: "WhatsApp", value: "+233 55 987 6543", sub: "Available 24/7", action: "https://wa.me/233559876543?text=Hello%20BCB%20Support", color: "text-green-400", bg: "bg-green-500/10 border-green-500/20" },
+              { icon: Mail, label: "Email Support", value: "support@bawjiasecb.com", sub: "Response within 24 hrs", action: "mailto:support@bawjiasecb.com?subject=BCB%20Mobile%20Banking%20Support", color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20" },
             ].map((c, i) => (
               <motion.a key={i} href={c.action} target="_blank" rel="noopener noreferrer"
                 initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>

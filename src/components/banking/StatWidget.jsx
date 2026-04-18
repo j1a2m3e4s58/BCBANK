@@ -24,7 +24,7 @@ export default function StatWidget({ icon: Icon, label, value, trend, trendUp, c
       <p className="text-lg md:text-xl font-heading font-bold text-foreground">{value}</p>
       {trend && (
         <p className={cn("text-[11px] font-medium mt-1", trendUp ? "text-green-400" : "text-red-400")}>
-          {trendUp ? "↑" : "↓"} {trend}
+          {trendUp ? "Up" : "Down"} {trend}
         </p>
       )}
     </motion.div>

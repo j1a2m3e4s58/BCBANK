@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { Link } from "react-router-dom";
 import { Bell, TrendingUp, TrendingDown, Wallet, PiggyBank, ArrowRight, Banknote, Target } from "lucide-react";
 import { motion } from "framer-motion";
@@ -8,12 +8,17 @@ import TransactionItem from "@/components/banking/TransactionItem";
 import StatWidget from "@/components/banking/StatWidget";
 import SpendingChart from "@/components/banking/SpendingChart";
 import GlassCard from "@/components/banking/GlassCard";
-import { sampleTransactions, sampleNotifications } from "@/lib/sampleData";
+import { useBankingData } from "@/lib/BankingDataContext";
+import { useAuth } from "@/lib/AuthContext";
 
 export default function Dashboard() {
-  const unreadCount = sampleNotifications.filter(n => !n.read).length;
+  const { transactions, notifications, balance, formatAmount } = useBankingData();
+  const { user } = useAuth();
+  const unreadCount = notifications.filter(n => !n.read).length;
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const income = transactions.filter(t => t.type === "credit").reduce((sum, tx) => sum + Number(String(tx.amount).replace(/,/g, "")), 0);
+  const expenses = transactions.filter(t => t.type === "debit").reduce((sum, tx) => sum + Number(String(tx.amount).replace(/,/g, "")), 0);
 
   return (
     <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
@@ -22,7 +27,7 @@ export default function Dashboard() {
         className="flex items-center justify-between mb-6 md:mb-8">
         <div>
           <p className="text-xs md:text-sm text-muted-foreground">{greeting},</p>
-          <h1 className="text-xl md:text-2xl font-heading font-bold text-foreground mt-0.5 tracking-tight">Kwame Asante 👋</h1>
+          <h1 className="text-xl md:text-2xl font-heading font-bold text-foreground mt-0.5 tracking-tight">{user?.full_name || "Demo Customer"}</h1>
         </div>
         <div className="flex items-center gap-2">
           <Link to="/support" className="p-2.5 rounded-xl bg-card/60 border border-border/50 hover:border-primary/30 transition-colors">
@@ -48,9 +53,9 @@ export default function Dashboard() {
 
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <StatWidget icon={TrendingUp} label="Income" value="GH₵ 4,500" trend="+12%" trendUp color="primary" index={0} />
-            <StatWidget icon={TrendingDown} label="Expenses" value="GH₵ 2,840" trend="-8%" trendUp={false} color="blue" index={1} />
-            <StatWidget icon={Wallet} label="Savings" value="GH₵ 12,300" trend="+5%" trendUp color="purple" index={2} />
+            <StatWidget icon={TrendingUp} label="Income" value={`GH₵ ${formatAmount(income)}`} trend="+12%" trendUp color="primary" index={0} />
+            <StatWidget icon={TrendingDown} label="Expenses" value={`GH₵ ${formatAmount(expenses)}`} trend="-8%" trendUp={false} color="blue" index={1} />
+            <StatWidget icon={Wallet} label="Balance" value={`GH₵ ${formatAmount(balance)}`} trend="+5%" trendUp color="purple" index={2} />
             <StatWidget icon={PiggyBank} label="Invested" value="GH₵ 3,200" trend="+18%" trendUp color="orange" index={3} />
           </div>
 
@@ -86,7 +91,7 @@ export default function Dashboard() {
               </Link>
             </div>
             <div className="space-y-0.5">
-              {sampleTransactions.slice(0, 6).map((tx, i) => (
+              {transactions.slice(0, 6).map((tx, i) => (
                 <TransactionItem key={tx.id} transaction={tx} index={i} />
               ))}
             </div>
@@ -97,7 +102,7 @@ export default function Dashboard() {
             <div className="flex items-start justify-between mb-3">
               <div>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Savings Goal</p>
-                <p className="text-sm font-heading font-semibold text-foreground mt-0.5">New Car 🚗</p>
+                <p className="text-sm font-heading font-semibold text-foreground mt-0.5">New Car</p>
               </div>
               <span className="text-xs font-bold text-primary">42%</span>
             </div>
@@ -109,7 +114,7 @@ export default function Dashboard() {
               <span>GH₵ 12,500 saved</span><span>GH₵ 30,000 goal</span>
             </div>
             <Link to="/savings" className="mt-3 block text-[11px] font-semibold text-primary hover:text-primary/80 transition-colors">
-              View all goals →
+              View all goals {"->"}
             </Link>
           </GlassCard>
 
@@ -122,7 +127,7 @@ export default function Dashboard() {
             <h3 className="text-sm font-heading font-semibold text-foreground mb-1">Earn 22% p.a. on Fixed Deposits</h3>
             <p className="text-[11px] text-muted-foreground mb-3 leading-relaxed">Lock your savings for 90+ days and earn premium interest rates.</p>
             <Link to="/savings" className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors">
-              Start Saving →
+              Start Saving {"->"}
             </Link>
           </motion.div>
         </div>

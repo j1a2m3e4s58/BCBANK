@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { motion } from "framer-motion";
 import { ArrowUpRight, ArrowDownLeft, ShoppingBag, Wifi, Zap, Coffee, Building2, Smartphone } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -45,7 +45,7 @@ export default function TransactionItem({ transaction, index = 0 }) {
 
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-foreground truncate">{transaction.name}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">{transaction.date} • {transaction.time}</p>
+        <p className="text-xs text-muted-foreground mt-0.5">{transaction.date} - {transaction.time}</p>
       </div>
 
       <div className="text-right flex-shrink-0">

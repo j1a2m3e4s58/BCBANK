@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, TrendingUp } from "lucide-react";
+import { useBankingData } from "@/lib/BankingDataContext";
 
 export default function BalanceCard() {
   const [visible, setVisible] = useState(true);
+  const { balance, formatAmount } = useBankingData();
 
   return (
     <motion.div
@@ -24,7 +26,7 @@ export default function BalanceCard() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <p className="text-xs md:text-sm text-muted-foreground font-medium tracking-wide uppercase">Total Balance</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Savings Account • ****4821</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Savings Account - ****4821</p>
           </div>
           <button
             onClick={() => setVisible(!visible)}
@@ -36,7 +38,7 @@ export default function BalanceCard() {
 
         <div className="mb-4">
           <span className="text-3xl md:text-4xl font-heading font-bold text-foreground tracking-tight">
-            {visible ? "GH₵ 24,850.00" : "GH₵ ••••••"}
+            {visible ? `GH₵ ${formatAmount(balance)}` : "GH₵ ******"}
           </span>
         </div>
 

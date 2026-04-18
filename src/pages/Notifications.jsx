@@ -1,19 +1,11 @@
-import React, { useState } from "react";
+import React from "react";
 import { motion } from "framer-motion";
 import { Bell, CheckCheck, Trash2, Circle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import GlassCard from "@/components/banking/GlassCard";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-
-const initialNotifications = [
-  { id: 1, title: "Transfer Successful", message: "GH₵ 500.00 sent to Ama Mensah successfully.", time: "2 min ago", read: false, type: "success" },
-  { id: 2, title: "Bill Payment Confirmed", message: "ECG electricity bill of GH₵ 320.00 paid.", time: "1 hr ago", read: false, type: "info" },
-  { id: 3, title: "Salary Received", message: "GH₵ 4,500.00 deposited to your savings account.", time: "Yesterday", read: true, type: "success" },
-  { id: 4, title: "Card Transaction Alert", message: "Your Visa card ending 7634 was used at Melcom for GH₵ 890.50.", time: "2 days ago", read: true, type: "alert" },
-  { id: 5, title: "Security Notice", message: "A new device was used to log into your account.", time: "3 days ago", read: true, type: "warning" },
-  { id: 6, title: "Fixed Deposit Matured", message: "Your 6-month fixed deposit of GH₵ 5,000 has matured.", time: "1 week ago", read: true, type: "info" },
-];
+import { useBankingData } from "@/lib/BankingDataContext";
 
 const typeColors = {
   success: "bg-green-500/15 border-green-500/20",
@@ -23,7 +15,7 @@ const typeColors = {
 };
 
 export default function Notifications() {
-  const [notifications, setNotifications] = useState(initialNotifications);
+  const { notifications, setNotifications } = useBankingData();
   const unread = notifications.filter(n => !n.read).length;
 
   const markAllRead = () => {
